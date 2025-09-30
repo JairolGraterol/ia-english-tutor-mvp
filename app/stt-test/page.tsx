@@ -14,8 +14,15 @@ export default function STTTestPage() {
       const fd = new FormData();
       fd.append("audio", file);
       const res = await fetch("/api/stt", { method: "POST", body: fd });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "STT error");
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setResult(
+          "Error: OpenAI error\n" +
+          (json.status ? `status: ${json.status}\n` : "") +
+          (json.details ? `details: ${json.details}` : "")
+        );
+        return;
+      }
       setResult(json.transcript || "");
     } catch (err: any) {
       setResult("Error: " + (err?.message || "STT failed"));
@@ -41,3 +48,4 @@ export default function STTTestPage() {
     </div>
   );
 }
+
