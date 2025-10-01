@@ -1,103 +1,143 @@
-import Image from "next/image";
-
-export default function Home() {
+// app/page.tsx
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f3f4f6", // gris claro
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        fontFamily:
+          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 980,
+          background: "white",
+          borderRadius: 16,
+          boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
+          padding: 28,
+        }}
+      >
+        <header style={{ textAlign: "center", marginBottom: 18 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
+            IA English Tutor – MVP
+          </h1>
+          <p style={{ color: "#374151" }}>
+            Un entrenador de inglés para profesionales en EE. UU. que te ayuda a
+            practicar <b>conversación</b>, <b>lectura</b> e <b>entrevistas</b> con
+            audio, transcripción y feedback inmediato.
+          </p>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
+        <section
+          style={{
+            background: "#f9fafb",
+            border: "1px solid #e5e7eb",
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 18,
+          }}
+        >
+          <h2 style={{ fontWeight: 700, marginBottom: 8 }}>Propósito (resumen)</h2>
+          <p style={{ color: "#4b5563" }}>
+            Acelerar tu inglés profesional con prácticas reales por <b>rol</b> (Finanzas,
+            Ventas, Marketing, Servicio al Cliente, IT, Logística) y por <b>enfoque</b>
+            (Entrevista, Conversación, Lectura, Presentación, Vocabulario), usando
+            reconocimiento de voz y evaluación asistida por IA.
+          </p>
+        </section>
+
+        <section
+          style={{
+            display: "grid",
+            gap: 12,
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            marginBottom: 14,
+          }}
+        >
           <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/practice"
+            style={{
+              display: "block",
+              padding: "16px 14px",
+              borderRadius: 12,
+              border: "1px solid #e5e7eb",
+              background: "white",
+              textDecoration: "none",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>
+              🎙️ Práctica integral
+            </div>
+            <div style={{ color: "#4b5563" }}>
+              Graba tu voz → Transcribe (Whisper) → Obtén feedback (GPT) adaptado a rol y
+              enfoque.
+            </div>
           </a>
+
           <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/stt-test"
+            style={{
+              display: "block",
+              padding: "16px 14px",
+              borderRadius: 12,
+              border: "1px solid #e5e7eb",
+              background: "white",
+              textDecoration: "none",
+            }}
           >
-            Read our docs
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>
+              🔊 Test de Transcripción
+            </div>
+            <div style={{ color: "#4b5563" }}>
+              Sube audio y verifica la transcripción con el backend <code>/api/stt</code>.
+            </div>
           </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+
+          <a
+            href="/feedback-test"
+            style={{
+              display: "block",
+              padding: "16px 14px",
+              borderRadius: 12,
+              border: "1px solid #e5e7eb",
+              background: "white",
+              textDecoration: "none",
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>
+              ✅ Test de Feedback
+            </div>
+            <div style={{ color: "#4b5563" }}>
+              Pega texto/transcript y recibe correcciones, sugerencias y “respuesta
+              modelo”.
+            </div>
+          </a>
+        </section>
+
+        <footer
+          style={{
+            marginTop: 8,
+            paddingTop: 12,
+            borderTop: "1px dashed #e5e7eb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <div style={{ color: "#6b7280" }}>
+            <b>Diseñado por:</b> JAIROL <i>CAN I HELP YOU!!</i> — con la asistencia de IA
+          </div>
+          <div style={{ color: "#6b7280" }}>v0 • MVP en Next.js + Vercel</div>
+        </footer>
+      </div>
+    </main>
   );
 }
