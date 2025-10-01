@@ -28,9 +28,9 @@ export default function HomePage() {
             IA English Tutor – MVP
           </h1>
           <p style={{ color: "#374151" }}>
-            Un entrenador de inglés para profesionales en EE. UU. que te ayuda a
-            practicar <b>conversación</b>, <b>lectura</b> e <b>entrevistas</b> con
-            audio, transcripción y feedback inmediato.
+            Un entrenador de inglés diseñado para <b>hablantes de español</b> con nivel
+            intermedio o superior que desean perfeccionar su inglés profesional, ya sea
+            viviendo en EE. UU. o en cualquier otro país. No está orientado a principiantes.
           </p>
         </header>
 
@@ -133,7 +133,7 @@ export default function HomePage() {
           }}
         >
           <div style={{ color: "#6b7280" }}>
-            <b>Diseñado por:</b> JAIROL <i>CAN I HELP YOU!!</i> — con la asistencia de IA
+            <b>Diseñado por:</b> <span style={{ fontWeight: 700 }}>Jairol CAN HELP YOU</span> — con la asistencia de IA
           </div>
           <div style={{ color: "#6b7280" }}>v0 • MVP en Next.js + Vercel</div>
         </footer>
