@@ -1,143 +1,85 @@
-// app/page.tsx
 export default function HomePage() {
   return (
-    <main
+    <div
       style={{
         minHeight: "100vh",
-        background: "#f3f4f6", // gris claro
+        backgroundColor: "#f3f4f6", // gris claro
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: 24,
-        fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans",
+        textAlign: "center",
+        padding: "40px",
+        fontFamily: "sans-serif",
       }}
     >
+      {/* Título principal */}
+      <h1 style={{ fontSize: "2.5rem", fontWeight: "bold", marginBottom: "20px" }}>
+        🌎 Mejora tu inglés con IA
+      </h1>
+
+      {/* Subtítulo */}
+      <p style={{ fontSize: "1.2rem", maxWidth: "700px", marginBottom: "20px", lineHeight: "1.6" }}>
+        Este proyecto está diseñado para cualquier persona hispanohablante que desee mejorar su inglés, 
+        ya sea que viva en Estados Unidos o en otro país.  
+        Aquí podrás practicar entrevistas, conversaciones y vocabulario profesional con retroalimentación en tiempo real.
+      </p>
+
+      {/* Explicación de pasos */}
       <div
         style={{
-          width: "100%",
-          maxWidth: 980,
           background: "white",
-          borderRadius: 16,
-          boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
-          padding: 28,
+          borderRadius: 12,
+          padding: "20px",
+          maxWidth: "600px",
+          marginBottom: "30px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+          textAlign: "left",
         }}
       >
-        <header style={{ textAlign: "center", marginBottom: 18 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
-            IA English Tutor – MVP
-          </h1>
-          <p style={{ color: "#374151" }}>
-            Un entrenador de inglés diseñado para <b>hablantes de español</b> con nivel
-            intermedio o superior que desean perfeccionar su inglés profesional, ya sea
-            viviendo en EE. UU. o en cualquier otro país. No está orientado a principiantes.
-          </p>
-        </header>
-
-        <section
-          style={{
-            background: "#f9fafb",
-            border: "1px solid #e5e7eb",
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 18,
-          }}
-        >
-          <h2 style={{ fontWeight: 700, marginBottom: 8 }}>Propósito (resumen)</h2>
-          <p style={{ color: "#4b5563" }}>
-            Acelerar tu inglés profesional con prácticas reales por <b>rol</b> (Finanzas,
-            Ventas, Marketing, Servicio al Cliente, IT, Logística) y por <b>enfoque</b>
-            (Entrevista, Conversación, Lectura, Presentación, Vocabulario), usando
-            reconocimiento de voz y evaluación asistida por IA.
-          </p>
-        </section>
-
-        <section
-          style={{
-            display: "grid",
-            gap: 12,
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            marginBottom: 14,
-          }}
-        >
-          <a
-            href="/practice"
-            style={{
-              display: "block",
-              padding: "16px 14px",
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-              background: "white",
-              textDecoration: "none",
-            }}
-          >
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>
-              🎙️ Práctica integral
-            </div>
-            <div style={{ color: "#4b5563" }}>
-              Graba tu voz → Transcribe (Whisper) → Obtén feedback (GPT) adaptado a rol y
-              enfoque.
-            </div>
-          </a>
-
-          <a
-            href="/stt-test"
-            style={{
-              display: "block",
-              padding: "16px 14px",
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-              background: "white",
-              textDecoration: "none",
-            }}
-          >
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>
-              🔊 Test de Transcripción
-            </div>
-            <div style={{ color: "#4b5563" }}>
-              Sube audio y verifica la transcripción con el backend <code>/api/stt</code>.
-            </div>
-          </a>
-
-          <a
-            href="/feedback-test"
-            style={{
-              display: "block",
-              padding: "16px 14px",
-              borderRadius: 12,
-              border: "1px solid #e5e7eb",
-              background: "white",
-              textDecoration: "none",
-            }}
-          >
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>
-              ✅ Test de Feedback
-            </div>
-            <div style={{ color: "#4b5563" }}>
-              Pega texto/transcript y recibe correcciones, sugerencias y “respuesta
-              modelo”.
-            </div>
-          </a>
-        </section>
-
-        <footer
-          style={{
-            marginTop: 8,
-            paddingTop: 12,
-            borderTop: "1px dashed #e5e7eb",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 8,
-          }}
-        >
-          <div style={{ color: "#6b7280" }}>
-            <b>Diseñado por:</b> <span style={{ fontWeight: 700 }}>Jairol CAN HELP YOU</span> — con la asistencia de IA
-          </div>
-          <div style={{ color: "#6b7280" }}>v0 • MVP en Next.js + Vercel</div>
-        </footer>
+        <h2 style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "10px" }}>
+          🚀 ¿Cómo funciona?
+        </h2>
+        <ol style={{ fontSize: "1rem", lineHeight: "1.8", paddingLeft: "20px" }}>
+          <li>🎤 Graba tu voz o una conversación de práctica.</li>
+          <li>🤖 El sistema transcribe lo que dijiste y corrige errores de gramática y vocabulario.</li>
+          <li>📊 Recibe retroalimentación inmediata y una versión mejorada de tu respuesta.</li>
+        </ol>
       </div>
-    </main>
+
+      {/* Botón con gradiente */}
+      <a
+        href="/practice"
+        style={{
+          display: "inline-block",
+          padding: "14px 28px",
+          borderRadius: 12,
+          background: "linear-gradient(90deg, #2563eb, #7c3aed)", // Azul → Violeta
+          color: "white",
+          fontWeight: 700,
+          fontSize: 18,
+          textDecoration: "none",
+          boxShadow: "0 6px 16px rgba(124, 58, 237, 0.4)",
+          transition: "transform 0.2s ease, boxShadow 0.2s ease",
+        }}
+        onMouseOver={(e) => {
+          (e.currentTarget as HTMLElement).style.transform = "scale(1.05)";
+          (e.currentTarget as HTMLElement).style.boxShadow =
+            "0 8px 20px rgba(124, 58, 237, 0.6)";
+        }}
+        onMouseOut={(e) => {
+          (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+          (e.currentTarget as HTMLElement).style.boxShadow =
+            "0 6px 16px rgba(124, 58, 237, 0.4)";
+        }}
+      >
+        🚀 ¡Comienza a practicar ahora!
+      </a>
+
+      {/* Footer con créditos */}
+      <footer style={{ marginTop: "40px", fontSize: "0.9rem", color: "#555" }}>
+        Diseñado por <strong>Jairol CAN HELP YOU</strong> ✨ con la asistencia de IA
+      </footer>
+    </div>
   );
 }
