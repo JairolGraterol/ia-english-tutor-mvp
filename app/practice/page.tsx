@@ -49,7 +49,6 @@ export default function PracticePage() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setMediaStream(stream);
 
-      // Prefer webm/opus (ampliamente soportado: Chrome/Edge/Opera)
       const options: MediaRecorderOptions = { mimeType: "audio/webm" };
       const rec = new MediaRecorder(stream, options);
       recorderRef.current = rec;
@@ -62,15 +61,13 @@ export default function PracticePage() {
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         const url = URL.createObjectURL(blob);
         setRecordUrl(url);
-        // Empaquetar como File para /api/stt
         const f = new File([blob], "recording.webm", { type: "audio/webm" });
         setFile(f);
-        // liberar micro
         stream.getTracks().forEach(t => t.stop());
         setMediaStream(null);
       };
 
-      rec.start(250); // recolecta cada 250ms
+      rec.start(250);
       setRecording(true);
       startTimer();
     } catch (e: any) {
@@ -137,13 +134,29 @@ export default function PracticePage() {
       <p>Graba audio con el micrófono del navegador, obtén transcripción y feedback.</p>
 
       <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+        {/* Rol con select */}
         <label>
           <div>Rol / Dominio</div>
-          <input value={role} onChange={(e)=>setRole(e.target.value)} style={{ width:"100%", padding:8 }} />
+          <select value={role} onChange={(e)=>setRole(e.target.value)} style={{ width:"100%", padding:8 }}>
+            <option>Finance & Accounting</option>
+            <option>Sales</option>
+            <option>Marketing</option>
+            <option>Customer Service</option>
+            <option>IT / Technology</option>
+            <option>Logistics & Operations</option>
+          </select>
         </label>
+
+        {/* Enfoque con select */}
         <label>
           <div>Enfoque</div>
-          <input value={focus} onChange={(e)=>setFocus(e.target.value)} style={{ width:"100%", padding:8 }} placeholder="interview, reading, conversation..." />
+          <select value={focus} onChange={(e)=>setFocus(e.target.value)} style={{ width:"100%", padding:8 }}>
+            <option>interview</option>
+            <option>reading</option>
+            <option>conversation</option>
+            <option>presentation</option>
+            <option>vocabulary</option>
+          </select>
         </label>
 
         {/* Grabación directa */}
@@ -162,11 +175,12 @@ export default function PracticePage() {
           />
         </div>
 
-        {/* Previsualización del audio grabado */}
+        {/* Previsualización */}
         {recordUrl && (
           <audio controls src={recordUrl} style={{ marginTop: 8 }} />
         )}
 
+        {/* Botones de acción */}
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={runSTT} disabled={loadingSTT} style={{ padding: "8px 12px" }}>
             {loadingSTT ? "Transcribiendo..." : "1) Transcribir audio"}
@@ -178,6 +192,7 @@ export default function PracticePage() {
 
         {error && <pre style={{ color:"crimson", whiteSpace:"pre-wrap" }}>{error}</pre>}
 
+        {/* Transcript */}
         <section style={{ marginTop: 8 }}>
           <h3>Transcript</h3>
           <pre style={{ whiteSpace:"pre-wrap", background:"#f6f6f6", padding:12, borderRadius:8 }}>
@@ -185,6 +200,7 @@ export default function PracticePage() {
           </pre>
         </section>
 
+        {/* Feedback */}
         {feedback && (
           <div style={{ display:"grid", gap: 12, marginTop: 8 }}>
             <div><b>Level estimate:</b> {feedback.level_estimate || "—"}</div>
