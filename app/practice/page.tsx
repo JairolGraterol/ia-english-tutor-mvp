@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 /** Tipos del historial */
 type PracticeItem = {
   id: string;
-  createdAt: string;  // ISO
+  createdAt: string; // ISO
   role: string;
   focus: string;
   transcript: string;
@@ -12,6 +12,43 @@ type PracticeItem = {
 };
 
 const LS_KEY = "practice_history_v1";
+const MAX_SECONDS = 15; // ★ Límite de grabación
+
+/** Helper UI: círculo tipo semáforo con valor dentro */
+function ScoreCircle({
+  label,
+  value,
+  activeColor,
+  active,
+}: {
+  label: string;
+  value: number;
+  activeColor: string; // CSS color
+  active: boolean;
+}) {
+  return (
+    <div style={{ display: "grid", placeItems: "center", gap: 6 }}>
+      <div
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: "50%",
+          display: "grid",
+          placeItems: "center",
+          fontWeight: 800,
+          border: `3px solid ${active ? activeColor : "#e5e7eb"}`,
+          background: active ? activeColor : "white",
+          color: active ? "white" : "#111827",
+          boxShadow: active ? `0 6px 14px ${activeColor}55` : "none",
+        }}
+        title={`${label}: ${value}`}
+      >
+        {Math.round(value)}
+      </div>
+      <div style={{ fontSize: 12, color: "#374151" }}>{label}</div>
+    </div>
+  );
+}
 
 export default function PracticePage() {
   // --- Estado de práctica ---
@@ -27,10 +64,13 @@ export default function PracticePage() {
   const [loadingSTT, setLoadingSTT] = useState(false);
   const [loadingFB, setLoadingFB] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [role, setRole] = useState("Finance & Accounting");
-  const [focus, setFocus] = useState("interview");
+  const [role, setRole] = useState("");  // placeholder
+  const [focus, setFocus] = useState(""); // placeholder
   const [feedback, setFeedback] = useState<any>(null);
   const [error, setError] = useState("");
+
+  // --- Puntuaciones ---
+  const [overallScore, setOverallScore] = useState<number>(0);
 
   // --- Historial en localStorage ---
   const [history, setHistory] = useState<PracticeItem[]>([]);
@@ -55,11 +95,19 @@ export default function PracticePage() {
     } catch {}
   };
 
-  // --- Timer grabación ---
+  // --- Timer grabación (★ con auto-stop a 15s) ---
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setSeconds(0);
-    timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
+    timerRef.current = setInterval(() => {
+      setSeconds((s) => {
+        const next = s + 1;
+        if (next >= MAX_SECONDS) {
+          stopRecording(); // detiene MediaRecorder y timer
+        }
+        return next;
+      });
+    }, 1000);
   };
   const stopTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -141,6 +189,10 @@ export default function PracticePage() {
       alert("No hay transcript todavía");
       return;
     }
+    if (!role || !focus) {
+      alert("Escoge el dominio y el enfoque antes de continuar.");
+      return;
+    }
     setLoadingFB(true);
     setError("");
     try {
@@ -158,6 +210,38 @@ export default function PracticePage() {
       }
       if (!res.ok) throw new Error(data?.error || raw);
       setFeedback(data);
+
+      // calcular puntajes a partir de feedback
+      const issues: string[] = data?.issues || [];
+      const corrections: any[] = data?.corrections || [];
+      const pronTips: string[] = data?.pronunciation_tips || [];
+      const practiceWords: string[] = data?.practice_words || [];
+
+      const countMatch = (arr: string[], key: string) =>
+        arr.filter((s) => s.toLowerCase().includes(key)).length;
+
+      const grammarHits =
+        countMatch(issues, "gramm") + // grammar, grammatical
+        countMatch(issues, "tense") +
+        countMatch(issues, "article") +
+        corrections.length;
+
+      const vocabHits =
+        countMatch(issues, "vocab") +
+        countMatch(issues, "word choice") +
+        (practiceWords?.length ? 1 : 0);
+
+      const pronHits =
+        countMatch(issues, "pronun") + // pronunciation
+        pronTips.length;
+
+      const clamp = (n: number) => Math.max(0, Math.min(100, n));
+      const grammarScore = clamp(92 - grammarHits * 7);
+      const vocabScore = clamp(90 - vocabHits * 6);
+      const pronScore = clamp(90 - pronHits * 6);
+
+      const overall = Math.round((grammarScore + vocabScore + pronScore) / 3);
+      setOverallScore(overall);
     } catch (e: any) {
       setError("Feedback: " + (e?.message || "failed"));
     } finally {
@@ -188,6 +272,20 @@ export default function PracticePage() {
     persistHistory(next);
   };
 
+  const clearCurrent = () => {
+    setTranscript("");
+    setFeedback(null);
+    setError("");
+    setRecordUrl("");
+    setFile(null);
+    setOverallScore(0);
+    setSeconds(0);
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((t) => t.stop());
+      setMediaStream(null);
+    }
+  };
+
   const clearAll = () => {
     if (!confirm("¿Borrar TODO el historial?")) return;
     persistHistory([]);
@@ -216,6 +314,33 @@ export default function PracticePage() {
       minute: "2-digit",
     });
 
+  // --- Opciones (alfabéticas) ---
+  const roleOptions = [
+    "Comida",
+    "Customer Service",
+    "Finance & Accounting",
+    "IT / Technology",
+    "Logistics & Operations",
+    "Marketing",
+    "News",
+    "Sales",
+    "Tourism / Travel",
+  ].sort((a, b) => a.localeCompare(b));
+
+  const focusOptions = [
+    "conversation",
+    "interview",
+    "presentation",
+    "reading",
+    "vocabulary",
+  ].sort((a, b) => a.localeCompare(b));
+
+  // --- Estado del semáforo según overallScore ---
+  const isGreen = overallScore >= 85;
+  const isYellow = overallScore >= 70 && overallScore < 85;
+  const isOrange = overallScore >= 50 && overallScore < 70;
+  const isRed = overallScore < 50;
+
   // --- UI ---
   return (
     <main
@@ -235,7 +360,7 @@ export default function PracticePage() {
           gap: 16,
         }}
       >
-        {/* Encabezado y CTA como la portada */}
+        {/* Encabezado y controles */}
         <header
           style={{
             background: "white",
@@ -245,14 +370,14 @@ export default function PracticePage() {
           }}
         >
           <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>
-            🎧 Práctica integral — Graba → ✍️ Transcribe → ✅ Feedback
+            🎧 Práctica integral — Graba o sube archivo → ✍️ Transcribe → ✅ Feedback
           </h1>
           <p style={{ color: "#374151", marginBottom: 12 }}>
-            Selecciona tu <b>Rol</b> y <b>Enfoque</b>, graba tu audio, obtén transcripción y
-            feedback inmediato. Guarda tus intentos para revisar tu progreso.
+            Selecciona tu <b>dominio</b> y <b>enfoque</b>, <b>graba</b> (máx {humanTime(MAX_SECONDS)}) o <b>sube</b> audio, obtén
+            transcripción y feedback inmediato. Guarda tus intentos para revisar tu progreso.
           </p>
 
-          {/* Selects con el mismo estilo */}
+          {/* Selects con placeholders */}
           <div
             style={{
               display: "grid",
@@ -269,12 +394,14 @@ export default function PracticePage() {
                 onChange={(e) => setRole(e.target.value)}
                 style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #e5e7eb" }}
               >
-                <option>Finance & Accounting</option>
-                <option>Sales</option>
-                <option>Marketing</option>
-                <option>Customer Service</option>
-                <option>IT / Technology</option>
-                <option>Logistics & Operations</option>
+                <option value="" disabled>
+                  Escoge el dominio
+                </option>
+                {roleOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
               </select>
             </label>
 
@@ -285,11 +412,14 @@ export default function PracticePage() {
                 onChange={(e) => setFocus(e.target.value)}
                 style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #e5e7eb" }}
               >
-                <option>interview</option>
-                <option>reading</option>
-                <option>conversation</option>
-                <option>presentation</option>
-                <option>vocabulary</option>
+                <option value="" disabled>
+                  Escoge el enfoque
+                </option>
+                {focusOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
@@ -340,7 +470,9 @@ export default function PracticePage() {
               </a>
             )}
 
-            <span>Tiempo: <b>{humanTime(seconds)}</b></span>
+            <span>
+              Tiempo: <b>{humanTime(seconds)}</b> (máx {humanTime(MAX_SECONDS)})
+            </span>
 
             <input
               type="file"
@@ -370,14 +502,14 @@ export default function PracticePage() {
             <a
               onClick={runFeedback}
               style={{
-                cursor: transcript ? "pointer" : "not-allowed",
+                cursor: transcript && role && focus ? "pointer" : "not-allowed",
                 padding: "10px 16px",
                 borderRadius: 10,
-                background: transcript ? "linear-gradient(90deg, #2563eb, #7c3aed)" : "#cbd5e1",
+                background: transcript && role && focus ? "linear-gradient(90deg, #2563eb, #7c3aed)" : "#cbd5e1",
                 color: "white",
                 fontWeight: 700,
                 textDecoration: "none",
-                boxShadow: transcript ? "0 6px 16px rgba(124, 58, 237, 0.4)" : "none",
+                boxShadow: transcript && role && focus ? "0 6px 16px rgba(124, 58, 237, 0.4)" : "none",
                 opacity: loadingFB ? 0.7 : 1,
               }}
               title="Obtener feedback"
@@ -408,6 +540,27 @@ export default function PracticePage() {
             </pre>
           )}
         </header>
+
+        {/* Panel de puntuación (semáforo) */}
+        <section
+          style={{
+            background: "white",
+            borderRadius: 16,
+            boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
+            padding: 20,
+          }}
+        >
+          <h3 style={{ fontWeight: 800, marginBottom: 12 }}>📊 Puntuación (0–100)</h3>
+          <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+            <ScoreCircle label="Verde (Excelente)" value={overallScore} activeColor="#10b981" active={isGreen} />
+            <ScoreCircle label="Amarillo" value={overallScore} activeColor="#f59e0b" active={isYellow} />
+            <ScoreCircle label="Naranja" value={overallScore} activeColor="#fb923c" active={isOrange} />
+            <ScoreCircle label="Rojo (Debes mejorar)" value={overallScore} activeColor="#ef4444" active={isRed} />
+          </div>
+          <div style={{ marginTop: 8, color: "#4b5563", fontSize: 14 }}>
+            El color activo refleja tu nivel global basado en gramática, vocabulario y pronunciación del último feedback.
+          </div>
+        </section>
 
         {/* Transcript + Feedback + Guardar */}
         <section
@@ -516,26 +669,20 @@ export default function PracticePage() {
             </a>
 
             <a
-              onClick={() => {
-                setTranscript("");
-                setFeedback(null);
-                setError("");
-                setRecordUrl("");
-                setFile(null);
-              }}
+              onClick={clearCurrent}
               style={{
                 cursor: "pointer",
                 padding: "10px 16px",
                 borderRadius: 10,
-                background: "#f3f4f6",
-                color: "#111827",
+                background: "#fee2e2",
+                color: "#991b1b",
                 fontWeight: 700,
                 textDecoration: "none",
-                border: "1px solid #e5e7eb",
+                border: "1px solid #fecaca",
               }}
-              title="Limpiar campos actuales"
+              title="Borrar práctica (pantalla)"
             >
-              🧹 Limpiar
+              🗑️ Borrar práctica
             </a>
           </div>
         </section>
