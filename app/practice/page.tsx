@@ -41,11 +41,11 @@ function ScoreCircle({
           color: active ? "white" : "#111827",
           boxShadow: active ? `0 6px 14px ${activeColor}55` : "none",
         }}
-        title={`${label}: ${value}`}
+        title={`${label}: ${Math.round(value)}`}
       >
         {Math.round(value)}
       </div>
-      <div style={{ fontSize: 12, color: "#374151" }}>{label}</div>
+      <div style={{ fontSize: 12, color: "#374151", textAlign: "center" }}>{label}</div>
     </div>
   );
 }
@@ -211,7 +211,7 @@ export default function PracticePage() {
       if (!res.ok) throw new Error(data?.error || raw);
       setFeedback(data);
 
-      // calcular puntajes a partir de feedback
+      // calcular puntajes a partir de feedback (heurístico)
       const issues: string[] = data?.issues || [];
       const corrections: any[] = data?.corrections || [];
       const pronTips: string[] = data?.pronunciation_tips || [];
@@ -335,11 +335,12 @@ export default function PracticePage() {
     "vocabulary",
   ].sort((a, b) => a.localeCompare(b));
 
-  // --- Estado del semáforo según overallScore ---
-  const isGreen = overallScore >= 85;
-  const isYellow = overallScore >= 70 && overallScore < 85;
-  const isOrange = overallScore >= 50 && overallScore < 70;
-  const isRed = overallScore < 50;
+  // --- Estado del semáforo ---
+  const hasScore = overallScore > 0; // 🔸 Al inicio: false → todos apagados
+  const isGreen = hasScore && overallScore >= 85;
+  const isYellow = hasScore && overallScore >= 70 && overallScore < 85;
+  const isOrange = hasScore && overallScore >= 50 && overallScore < 70;
+  const isRed = hasScore && overallScore < 50;
 
   // --- UI ---
   return (
@@ -552,10 +553,10 @@ export default function PracticePage() {
         >
           <h3 style={{ fontWeight: 800, marginBottom: 12 }}>📊 Puntuación (0–100)</h3>
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
-            <ScoreCircle label="Verde (Excelente)" value={overallScore} activeColor="#10b981" active={isGreen} />
-            <ScoreCircle label="Amarillo" value={overallScore} activeColor="#f59e0b" active={isYellow} />
-            <ScoreCircle label="Naranja" value={overallScore} activeColor="#fb923c" active={isOrange} />
-            <ScoreCircle label="Rojo (Debes mejorar)" value={overallScore} activeColor="#ef4444" active={isRed} />
+            <ScoreCircle label="🟢 Excelente" value={overallScore} activeColor="#10b981" active={isGreen} />
+            <ScoreCircle label="🟡 Aceptable" value={overallScore} activeColor="#f59e0b" active={isYellow} />
+            <ScoreCircle label="🟠 Necesita práctica" value={overallScore} activeColor="#fb923c" active={isOrange} />
+            <ScoreCircle label="🔴 Debes mejorar" value={overallScore} activeColor="#ef4444" active={isRed} />
           </div>
           <div style={{ marginTop: 8, color: "#4b5563", fontSize: 14 }}>
             El color activo refleja tu nivel global basado en gramática, vocabulario y pronunciación del último feedback.
