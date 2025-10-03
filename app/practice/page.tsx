@@ -444,7 +444,7 @@ export default function PracticePage() {
             padding: 20,
           }}
         >
-          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>
+          <h1 style={{ fontSize: 30, fontWeight: 900, marginBottom: 8, color: "#0f172a" }}>
             🎧 Práctica guiada — Paso a paso
           </h1>
           <p style={{ color: "#374151", marginBottom: 12 }}>
@@ -456,7 +456,9 @@ export default function PracticePage() {
           <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr", marginBottom: 8 }}>
             <label>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <b>1) Rol / Dominio</b>
+                <span style={{ fontSize: 18, fontWeight: 900, color: "#111827" }}>
+                  1) Rol / Dominio
+                </span>
                 {!role && <BlinkBadge>Elige primero</BlinkBadge>}
               </div>
               <select
@@ -484,7 +486,9 @@ export default function PracticePage() {
             <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr", marginBottom: 8 }}>
               <label>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <b>2) Enfoque</b>
+                  <span style={{ fontSize: 18, fontWeight: 900, color: "#111827" }}>
+                    2) Enfoque
+                  </span>
                   {!focus && <BlinkBadge color="#7c3aed">Ahora selecciona enfoque</BlinkBadge>}
                 </div>
                 <select
@@ -512,7 +516,9 @@ export default function PracticePage() {
           {step >= 2 && (
             <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <b>3) Audio</b>
+                <span style={{ fontSize: 18, fontWeight: 900, color: "#111827" }}>
+                  3) Audio
+                </span>
                 {!(recordUrl || file) && <BlinkBadge>① Graba o sube un archivo</BlinkBadge>}
               </div>
 
@@ -642,6 +648,7 @@ export default function PracticePage() {
               </div>
 
               <div
+                className="two-col"
                 style={{
                   display: "grid",
                   gap: 10,
@@ -649,7 +656,7 @@ export default function PracticePage() {
                 }}
               >
                 <div>
-                  <div style={{ fontWeight: 700, marginBottom: 6 }}>English</div>
+                  <div style={{ fontWeight: 900, marginBottom: 6, color: "#0f172a" }}>English</div>
                   <pre
                     style={{
                       whiteSpace: "pre-wrap",
@@ -665,7 +672,7 @@ export default function PracticePage() {
                 </div>
 
                 <div>
-                  <div style={{ fontWeight: 700, marginBottom: 6 }}>Español</div>
+                  <div style={{ fontWeight: 900, marginBottom: 6, color: "#0f172a" }}>Español</div>
                   <pre
                     style={{
                       whiteSpace: "pre-wrap",
@@ -780,7 +787,9 @@ export default function PracticePage() {
             padding: 20,
           }}
         >
-          <h3 style={{ fontWeight: 800, marginBottom: 12 }}>📊 Puntuación (0–100)</h3>
+          <h3 style={{ fontWeight: 900, marginBottom: 12, fontSize: 20, color: "#0f172a" }}>
+            📊 Puntuación (0–100)
+          </h3>
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
             <ScoreCircle label="🟢 Excelente" value={overallScore} activeColor="#10b981" active={isGreen} />
             <ScoreCircle label="🟡 Aceptable" value={overallScore} activeColor="#f59e0b" active={isYellow} />
@@ -801,7 +810,9 @@ export default function PracticePage() {
             padding: 20,
           }}
         >
-          <h3 style={{ fontWeight: 800, marginBottom: 8 }}>✅ Feedback</h3>
+          <h3 style={{ fontWeight: 900, marginBottom: 8, fontSize: 20, color: "#0f172a" }}>
+            ✅ Feedback
+          </h3>
           {step < 5 ? (
             <div style={{ color: "#6b7280" }}>Aún no has solicitado feedback.</div>
           ) : !feedback ? (
@@ -871,7 +882,7 @@ export default function PracticePage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-            <h3 style={{ fontWeight: 800 }}>🗂️ Historial de prácticas</h3>
+            <h3 style={{ fontWeight: 900, fontSize: 20, color: "#0f172a" }}>🗂️ Historial de prácticas</h3>
 
             {history.length > 0 && (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1047,10 +1058,25 @@ export default function PracticePage() {
       {/* Responsivo móvil */}
       <style>{`
         @media (max-width: 768px) {
-          h1 { font-size: 1.35rem !important; }
-          p { font-size: 0.98rem !important; }
-          section { padding: 16px !important; }
-          .grid2 { grid-template-columns: 1fr !important; }
+          h1 { 
+            font-size: 1.6rem !important;
+            line-height: 1.25 !important;
+            color: #0f172a !important;
+          }
+          h3 {
+            font-size: 1.125rem !important;
+            color: #0f172a !important;
+          }
+          label, select, button, a, span, p, li, pre {
+            font-size: 1rem !important;
+            line-height: 1.5 !important;
+            color: #111827 !important;
+          }
+          pre { padding: 14px !important; }
+          /* selects y botones a ancho completo en móvil */
+          select, button, a[title], a[onclick] { width: 100% !important; }
+          /* EN/ES en una sola columna en móvil */
+          .two-col { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </main>
