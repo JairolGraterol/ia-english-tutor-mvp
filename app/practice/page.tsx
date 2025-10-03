@@ -30,11 +30,7 @@ function BlinkBadge({ children, color = "#2563eb" }: { children: any; color?: st
     >
       {children}
       <style>{`
-        @keyframes blink {
-          0% { opacity: 1 }
-          50% { opacity: .45 }
-          100% { opacity: 1 }
-        }
+        @keyframes blink { 0% { opacity: 1 } 50% { opacity: .45 } 100% { opacity: 1 } }
       `}</style>
     </span>
   );
@@ -77,8 +73,7 @@ function ScoreCircle({
 }
 
 export default function PracticePage() {
-  // --- Estado general / paso a paso ---
-  // Paso “progresivo”: 0=sin selección, 1=rol ok, 2=enfoque ok, 3=audio listo, 4=transcrito, 5=feedback
+  // --- Paso progresivo: 0 nada, 1 rol, 2 enfoque, 3 audio listo, 4 transcrito, 5 feedback ---
   const [step, setStep] = useState<number>(0);
 
   // --- Estado de práctica ---
@@ -96,22 +91,22 @@ export default function PracticePage() {
   const [loadingTR, setLoadingTR] = useState(false);
 
   const [transcript, setTranscript] = useState("");
-  const [transEN, setTransEN] = useState(""); // transcript (inglés)
-  const [transES, setTransES] = useState(""); // transcript traducido (español)
+  const [transEN, setTransEN] = useState("");
+  const [transES, setTransES] = useState("");
 
-  const [role, setRole] = useState("");   // placeholder
-  const [focus, setFocus] = useState(""); // placeholder
+  const [role, setRole] = useState("");
+  const [focus, setFocus] = useState("");
   const [feedback, setFeedback] = useState<any>(null);
   const [error, setError] = useState("");
 
-  // --- Puntuaciones (semáforo) ---
+  // --- Puntuaciones ---
   const [overallScore, setOverallScore] = useState<number>(0);
 
-  // --- Historial en localStorage ---
+  // --- Historial ---
   const [history, setHistory] = useState<PracticeItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Cargar historial al montar
+  // Cargar historial
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
@@ -131,7 +126,7 @@ export default function PracticePage() {
     } catch {}
   };
 
-  // --- Timer grabación (auto-stop a 15s) ---
+  // Timer grabación (auto-stop a 15s)
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setSeconds(0);
@@ -148,7 +143,7 @@ export default function PracticePage() {
     timerRef.current = null;
   };
 
-  // --- Grabación ---
+  // Grabación
   const startRecording = async () => {
     try {
       setError("");
@@ -197,7 +192,7 @@ export default function PracticePage() {
     setRecording(false);
   };
 
-  // --- STT y Traducción ---
+  // STT + Traducción
   const runSTT = async () => {
     if (!file) {
       alert("Graba o selecciona un audio (.m4a/.mp3/.webm)");
@@ -220,7 +215,6 @@ export default function PracticePage() {
       const raw = (json.transcript || "").trim();
       setTranscript(raw);
 
-      // Traducción automática: devolver EN y ES
       setLoadingTR(true);
       const tr = await fetch("/api/translate", {
         method: "POST",
@@ -230,10 +224,10 @@ export default function PracticePage() {
       const trJson = await tr.json();
       if (!tr.ok) throw new Error(trJson?.error || "Translate error");
 
-      setTransEN(trJson.en || "");
+      setTransEN(trJson.en || raw);
       setTransES(trJson.es || "");
 
-      setStep((s) => Math.max(s, 4)); // ya hay transcripción+traducción
+      setStep((s) => Math.max(s, 4)); // transcripción + traducción listas
     } catch (e: any) {
       setError("STT/Translate: " + (e?.message || "failed"));
     } finally {
@@ -242,7 +236,7 @@ export default function PracticePage() {
     }
   };
 
-  // --- Feedback ---
+  // Feedback
   const runFeedback = async () => {
     if (!transcript.trim()) {
       alert("No hay transcript todavía");
@@ -270,7 +264,7 @@ export default function PracticePage() {
       if (!res.ok) throw new Error(data?.error || raw);
       setFeedback(data);
 
-      // calcular puntajes heurísticos a partir de feedback
+      // Heurístico de puntaje
       const issues: string[] = data?.issues || [];
       const corrections: any[] = data?.corrections || [];
       const pronTips: string[] = data?.pronunciation_tips || [];
@@ -280,28 +274,18 @@ export default function PracticePage() {
         arr.filter((s) => s.toLowerCase().includes(key)).length;
 
       const grammarHits =
-        countMatch(issues, "gramm") +
-        countMatch(issues, "tense") +
-        countMatch(issues, "article") +
-        corrections.length;
-
-      const vocabHits =
-        countMatch(issues, "vocab") +
-        countMatch(issues, "word choice") +
-        (practiceWords?.length ? 1 : 0);
-
-      const pronHits =
-        countMatch(issues, "pronun") + pronTips.length;
+        countMatch(issues, "gramm") + countMatch(issues, "tense") + countMatch(issues, "article") + corrections.length;
+      const vocabHits = countMatch(issues, "vocab") + countMatch(issues, "word choice") + (practiceWords?.length ? 1 : 0);
+      const pronHits = countMatch(issues, "pronun") + pronTips.length;
 
       const clamp = (n: number) => Math.max(0, Math.min(100, n));
       const grammarScore = clamp(92 - grammarHits * 7);
       const vocabScore = clamp(90 - vocabHits * 6);
       const pronScore = clamp(90 - pronHits * 6);
-
       const overall = Math.round((grammarScore + vocabScore + pronScore) / 3);
-      setOverallScore(overall);
 
-      setStep((s) => Math.max(s, 5)); // feedback listo
+      setOverallScore(overall);
+      setStep((s) => Math.max(s, 5));
     } catch (e: any) {
       setError("Feedback: " + (e?.message || "failed"));
     } finally {
@@ -309,7 +293,7 @@ export default function PracticePage() {
     }
   };
 
-  // --- Guardar / Borrar / Cargar del historial ---
+  // Guardar / Borrar / Cargar del historial
   const savePractice = () => {
     if (!transcript.trim()) {
       alert("No hay transcript para guardar");
@@ -347,7 +331,7 @@ export default function PracticePage() {
     setFile(null);
     setOverallScore(0);
     setSeconds(0);
-    setStep(role ? (focus ? 2 : 1) : 0); // volver al paso correcto del wizard
+    setStep(role ? (focus ? 2 : 1) : 0);
     if (mediaStream) {
       mediaStream.getTracks().forEach((t) => t.stop());
       setMediaStream(null);
@@ -364,14 +348,14 @@ export default function PracticePage() {
     setRole(item.role);
     setFocus(item.focus);
     setTranscript(item.transcript);
-    setTransEN(item.transcript); // fallback: sin traducción guardada
+    setTransEN(item.transcript);
     setTransES("");
     setFeedback(item.feedback);
-    setStep(5); // llevar al final para visualizar
+    setStep(5);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // --- Selección múltiple en historial ---
+  // Selección múltiple
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -393,7 +377,7 @@ export default function PracticePage() {
     setSelectedIds(new Set());
   };
 
-  // --- Helpers UI ---
+  // Helpers UI
   const humanTime = (s: number) => {
     const mm = Math.floor(s / 60).toString().padStart(2, "0");
     const ss = (s % 60).toString().padStart(2, "0");
@@ -408,7 +392,7 @@ export default function PracticePage() {
       minute: "2-digit",
     });
 
-  // --- Opciones (alfabéticas) ---
+  // Opciones (alfabéticas)
   const roleOptions = [
     "Comida",
     "Customer Service",
@@ -429,14 +413,17 @@ export default function PracticePage() {
     "vocabulary",
   ].sort((a, b) => a.localeCompare(b));
 
-  // --- Estado del semáforo ---
-  const hasScore = overallScore > 0; // al inicio: false → todos apagados
+  // Semáforo
+  const hasScore = overallScore > 0;
   const isGreen = hasScore && overallScore >= 85;
   const isYellow = hasScore && overallScore >= 70 && overallScore < 85;
   const isOrange = hasScore && overallScore >= 50 && overallScore < 70;
   const isRed = hasScore && overallScore < 50;
 
-  // --- UI ---
+  // Titileo (transcribir y feedback)
+  const shouldBlinkTranscribe = step >= 3 && step < 4 && !loadingSTT && !loadingTR && !!file;
+  const shouldBlinkFeedback = step >= 4 && step < 5 && !loadingFB && !!transcript && !!role && !!focus;
+
   return (
     <main
       style={{
@@ -465,7 +452,7 @@ export default function PracticePage() {
             <b> graba</b> (máx {humanTime(MAX_SECONDS)}), <b>transcribe</b> y finalmente obtén <b>feedback</b>.
           </p>
 
-          {/* Paso 1: Rol / Dominio */}
+          {/* Paso 1: Rol */}
           <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr", marginBottom: 8 }}>
             <label>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -492,7 +479,7 @@ export default function PracticePage() {
             </label>
           </div>
 
-          {/* Paso 2: Enfoque (se muestra luego de rol) */}
+          {/* Paso 2: Enfoque */}
           {step >= 1 && (
             <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr", marginBottom: 8 }}>
               <label>
@@ -521,7 +508,7 @@ export default function PracticePage() {
             </div>
           )}
 
-          {/* Paso 3: Grabación/Subir archivo (se muestra luego de enfoque) */}
+          {/* Paso 3: Audio */}
           {step >= 2 && (
             <div style={{ display: "grid", gap: 10, marginTop: 6 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -562,7 +549,7 @@ export default function PracticePage() {
                     }}
                     title="Detener grabación"
                   >
-                    ⏹️ Detener
+                    ⏹️ Detener ({humanTime(seconds)})
                   </a>
                 )}
 
@@ -570,17 +557,42 @@ export default function PracticePage() {
                   Tiempo: <b>{humanTime(seconds)}</b> (máx {humanTime(MAX_SECONDS)})
                 </span>
 
-                <input
-                  type="file"
-                  accept="audio/*"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0] ?? null;
-                    setFile(f);
-                    if (f) setStep((s) => Math.max(s, 3));
+                {/* Input de archivo estilizado gris claro */}
+                <label
+                  style={{
+                    display: "inline-block",
+                    padding: "10px 14px",
+                    background: "#eef2f7",
+                    color: "#111827",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    fontWeight: 700,
                   }}
-                  title="(Opcional) También puedes elegir un archivo"
-                />
+                  title="(Opcional) Elegir archivo de audio"
+                >
+                  📁 Elegir archivo
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] ?? null;
+                      if (f && f.size > 5 * 1024 * 1024) {
+                        alert("Archivo muy grande (máx 5MB).");
+                        e.currentTarget.value = "";
+                        return;
+                      }
+                      setFile(f);
+                      if (f) setStep((s) => Math.max(s, 3));
+                    }}
+                    style={{ display: "none" }}
+                  />
+                </label>
+                <span style={{ color: "#6b7280" }}>
+                  {file ? file.name : "No file chosen"}
+                </span>
 
+                {/* Transcribir */}
                 <a
                   onClick={runSTT}
                   style={{
@@ -592,10 +604,27 @@ export default function PracticePage() {
                     fontWeight: 700,
                     textDecoration: "none",
                     opacity: loadingSTT || loadingTR ? 0.7 : 1,
+                    position: "relative",
+                    boxShadow: shouldBlinkTranscribe ? "0 0 0 0 rgba(37, 99, 235, .7)" : "none",
+                    animation: shouldBlinkTranscribe ? "pulseRing 1.2s infinite" : "none",
                   }}
                   title="Transcribir audio (STT)"
                 >
-                  {loadingSTT || loadingTR ? "⌛ Transcribiendo..." : "✍️ ② Transcribir"}
+                  {loadingSTT || loadingTR ? (
+                    "⌛ Transcribiendo..."
+                  ) : shouldBlinkTranscribe ? (
+                    <span style={{ animation: "blink 1.1s infinite" }}>✍️ ② Transcribir</span>
+                  ) : (
+                    "✍️ ② Transcribir"
+                  )}
+                  <style>{`
+                    @keyframes pulseRing {
+                      0% { box-shadow: 0 0 0 0 rgba(37,99,235,.6); }
+                      70% { box-shadow: 0 0 0 12px rgba(37,99,235,0); }
+                      100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+                    }
+                    @keyframes blink { 0% {opacity:1} 50% {opacity:.45} 100% {opacity:1} }
+                  `}</style>
                 </a>
               </div>
 
@@ -604,7 +633,7 @@ export default function PracticePage() {
             </div>
           )}
 
-          {/* Paso 4: Mostrar transcripciones (EN / ES) */}
+          {/* Paso 4: Transcripciones */}
           {step >= 4 && (
             <div style={{ marginTop: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -616,7 +645,7 @@ export default function PracticePage() {
                 style={{
                   display: "grid",
                   gap: 10,
-                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                 }}
               >
                 <div>
@@ -654,7 +683,7 @@ export default function PracticePage() {
             </div>
           )}
 
-          {/* Paso 5: Obtener feedback (aparece después de transcribir) */}
+          {/* Paso 5: Feedback */}
           {step >= 4 && (
             <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
               <BlinkBadge color="#16a34a">③ Obtén tu feedback</BlinkBadge>
@@ -666,19 +695,26 @@ export default function PracticePage() {
                   padding: "10px 16px",
                   borderRadius: 10,
                   background:
-                    transcript && role && focus
-                      ? "linear-gradient(90deg, #2563eb, #7c3aed)"
-                      : "#cbd5e1",
+                    transcript && role && focus ? "linear-gradient(90deg, #2563eb, #7c3aed)" : "#cbd5e1",
                   color: "white",
                   fontWeight: 700,
                   textDecoration: "none",
                   boxShadow:
                     transcript && role && focus ? "0 6px 16px rgba(124, 58, 237, 0.4)" : "none",
                   opacity: loadingFB ? 0.7 : 1,
+                  position: "relative",
+                  animation: shouldBlinkFeedback ? "pulseRingFB 1.2s infinite" : "none",
                 }}
                 title="Obtener feedback"
               >
                 {loadingFB ? "⌛ Analizando..." : "✅ Obtener feedback"}
+                <style>{`
+                  @keyframes pulseRingFB {
+                    0% { box-shadow: 0 0 0 0 rgba(22,163,74,.6); }
+                    70% { box-shadow: 0 0 0 12px rgba(22,163,74,0); }
+                    100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); }
+                  }
+                `}</style>
               </a>
 
               <a
@@ -735,7 +771,7 @@ export default function PracticePage() {
           )}
         </header>
 
-        {/* Panel de puntuación (semáforo) */}
+        {/* Semáforo */}
         <section
           style={{
             background: "white",
@@ -746,17 +782,17 @@ export default function PracticePage() {
         >
           <h3 style={{ fontWeight: 800, marginBottom: 12 }}>📊 Puntuación (0–100)</h3>
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
-            <ScoreCircle label="🟢 Excelente" value={overallScore} activeColor="#10b981" active={hasScore && overallScore >= 85} />
-            <ScoreCircle label="🟡 Aceptable" value={overallScore} activeColor="#f59e0b" active={hasScore && overallScore >= 70 && overallScore < 85} />
-            <ScoreCircle label="🟠 Necesita práctica" value={overallScore} activeColor="#fb923c" active={hasScore && overallScore >= 50 && overallScore < 70} />
-            <ScoreCircle label="🔴 Debes mejorar" value={overallScore} activeColor="#ef4444" active={hasScore && overallScore < 50} />
+            <ScoreCircle label="🟢 Excelente" value={overallScore} activeColor="#10b981" active={isGreen} />
+            <ScoreCircle label="🟡 Aceptable" value={overallScore} activeColor="#f59e0b" active={isYellow} />
+            <ScoreCircle label="🟠 Necesita práctica" value={overallScore} activeColor="#fb923c" active={isOrange} />
+            <ScoreCircle label="🔴 Debes mejorar" value={overallScore} activeColor="#ef4444" active={isRed} />
           </div>
           <div style={{ marginTop: 8, color: "#4b5563", fontSize: 14 }}>
             El color activo se enciende solo después de obtener feedback.
           </div>
         </section>
 
-        {/* Panel de Feedback (aparece a partir de step >= 5) */}
+        {/* Panel de Feedback */}
         <section
           style={{
             background: "white",
@@ -775,7 +811,6 @@ export default function PracticePage() {
               <div>
                 <b>Nivel estimado:</b> {feedback.level_estimate || "—"}
               </div>
-
               <div>
                 <b>Fortalezas</b>
                 <ul>
@@ -784,7 +819,6 @@ export default function PracticePage() {
                   ))}
                 </ul>
               </div>
-
               <div>
                 <b>Áreas de mejora</b>
                 <ul>
@@ -793,7 +827,6 @@ export default function PracticePage() {
                   ))}
                 </ul>
               </div>
-
               <div>
                 <b>Correcciones</b>
                 <ul>
@@ -806,12 +839,10 @@ export default function PracticePage() {
                   ))}
                 </ul>
               </div>
-
               <div>
                 <b>Palabras para practicar</b>
                 <div>{(feedback.practice_words || []).join(", ") || "—"}</div>
               </div>
-
               <div>
                 <b>Consejos de pronunciación</b>
                 <ul>
@@ -820,7 +851,6 @@ export default function PracticePage() {
                   ))}
                 </ul>
               </div>
-
               <div>
                 <b>Respuesta sugerida</b>
                 <pre style={{ whiteSpace: "pre-wrap" }}>
@@ -831,7 +861,7 @@ export default function PracticePage() {
           )}
         </section>
 
-        {/* Historial con selección múltiple */}
+        {/* Historial */}
         <section
           style={{
             background: "white",
@@ -1013,6 +1043,16 @@ export default function PracticePage() {
           Diseñado por <b>Jairol CAN HELP YOU</b> — con la asistencia de IA
         </footer>
       </div>
+
+      {/* Responsivo móvil */}
+      <style>{`
+        @media (max-width: 768px) {
+          h1 { font-size: 1.35rem !important; }
+          p { font-size: 0.98rem !important; }
+          section { padding: 16px !important; }
+          .grid2 { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </main>
   );
 }
