@@ -42,16 +42,15 @@ export default function Home() {
               fontWeight: 900,
               fontSize: "2.25rem",
               lineHeight: 1.15,
-              color: "#111827",
+              color: "#0f172a",
             }}
           >
             Mejora tu inglés con práctica guiada y feedback inmediato
           </h1>
-          <p style={{ marginTop: 8, color: "#4b5563", fontSize: "1.1rem" }}>
-            Para personas hispanohablantes dentro o fuera de EE. UU. con nivel
-            intermedio o superior. Graba o sube tu audio, obtén transcripción
-            EN/ES y recomendaciones claras para entrevistas, conversación,
-            presentaciones y más.
+          <p style={{ marginTop: 8, color: "#1f2937", fontSize: "1.1rem" }}>
+            Para personas hispanohablantes dentro o fuera de EE. UU. (nivel intermedio o superior).
+            Graba o sube tu audio, obtén transcripción EN/ES y recomendaciones para entrevistas,
+            conversación, presentaciones y más.
           </p>
         </header>
 
@@ -119,8 +118,15 @@ export default function Home() {
       {/* Responsivo móvil */}
       <style>{`
         @media (max-width: 640px) {
-          h1 { font-size: 1.5rem !important; }
-          p { font-size: 1rem !important; }
+          h1 { 
+            font-size: 1.8rem !important;
+            line-height: 1.25 !important;
+            color: #0f172a !important;
+          }
+          p { 
+            font-size: 1.05rem !important;
+            color: #1f2937 !important;
+          }
           section { padding: 22px !important; }
         }
       `}</style>
@@ -135,11 +141,13 @@ function Card({ title, desc }: { title: string; desc: string }) {
         background: "#fafafa",
         border: "1px solid #e5e7eb",
         borderRadius: 14,
-        padding: 16,
+        padding: 18,
         minHeight: 110,
       }}
     >
-      <div style={{ fontWeight: 800, marginBottom: 6 }}>{title}</div>
+      <div style={{ fontWeight: 900, marginBottom: 6, fontSize: "1.05rem", color: "#111827" }}>
+        {title}
+      </div>
       <div style={{ color: "#4b5563" }}>{desc}</div>
     </div>
   );
