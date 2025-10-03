@@ -1,110 +1,146 @@
-"use client";
-
-export default function HomePage() {
+export default function Home() {
   return (
-    <div
+    <main
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f3f4f6", // gris claro
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-        padding: "40px",
-        fontFamily: "sans-serif",
+        background: "#f3f4f6",
+        display: "grid",
+        placeItems: "center",
+        padding: "24px",
+        fontFamily:
+          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans",
       }}
     >
-      {/* Título principal */}
-      <h1 style={{ fontSize: "2.5rem", fontWeight: "bold", marginBottom: "20px" }}>
-        🌎 Mejora tu inglés con IA
-      </h1>
-
-      {/* Subtítulo */}
-      <p style={{ fontSize: "1.2rem", maxWidth: "700px", marginBottom: "20px", lineHeight: "1.6" }}>
-        Este proyecto está diseñado para cualquier persona hispanohablante que desee mejorar su inglés,
-        ya sea que viva en Estados Unidos o en otro país. No está orientado a principiantes: ideal para
-        nivel intermedio o superior que busca precisión y fluidez profesional.
-      </p>
-
-      {/* Explicación de pasos */}
-      <div
+      <section
         style={{
+          width: "100%",
+          maxWidth: 980,
           background: "white",
-          borderRadius: 12,
-          padding: "20px",
-          maxWidth: "600px",
-          marginBottom: "30px",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-          textAlign: "left",
+          borderRadius: 18,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+          padding: "32px",
         }}
       >
-        <h2 style={{ fontSize: "1.5rem", fontWeight: 600, marginBottom: 10 }}>🚀 ¿Cómo funciona?</h2>
-        <ol style={{ fontSize: "1rem", lineHeight: 1.8, paddingLeft: 20 }}>
-          <li>🎤 Graba tu voz o una conversación de práctica.</li>
-          <li>✍️ El sistema transcribe lo que dijiste y corrige gramática y vocabulario.</li>
-          <li>✅ Recibe feedback inmediato y una versión mejorada de tu respuesta.</li>
-        </ol>
+        <header style={{ textAlign: "center", marginBottom: 18 }}>
+          <div
+            style={{
+              display: "inline-block",
+              padding: "6px 12px",
+              borderRadius: 999,
+              background: "#eef2ff",
+              color: "#3730a3",
+              fontWeight: 800,
+              fontSize: 14,
+              letterSpacing: 0.3,
+            }}
+          >
+            🇺🇸🇪🇸 English Practice • Guided MVP
+          </div>
+          <h1
+            style={{
+              marginTop: 10,
+              fontWeight: 900,
+              fontSize: "2.25rem",
+              lineHeight: 1.15,
+              color: "#111827",
+            }}
+          >
+            Mejora tu inglés con práctica guiada y feedback inmediato
+          </h1>
+          <p style={{ marginTop: 8, color: "#4b5563", fontSize: "1.1rem" }}>
+            Para personas hispanohablantes dentro o fuera de EE. UU. con nivel
+            intermedio o superior. Graba o sube tu audio, obtén transcripción
+            EN/ES y recomendaciones claras para entrevistas, conversación,
+            presentaciones y más.
+          </p>
+        </header>
 
-        {/* Flujo de íconos clicable */}
-        <a
-          href="/practice"
+        <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 24,
-            fontSize: 48,
-            textDecoration: "none",
-            color: "inherit",
-            marginTop: 10,
-            marginBottom: 10,
+            display: "grid",
+            gap: 14,
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            marginTop: 6,
           }}
-          title="Ir a practicar"
         >
-          <span title="Graba tu voz">🎤</span>
-          <span style={{ fontSize: 28 }}>→</span>
-          <span title="El sistema transcribe y corrige">✍️</span>
-          <span style={{ fontSize: 28 }}>→</span>
-          <span title="Recibe feedback y versión mejorada">✅</span>
-        </a>
+          <Card
+            title="🎤 Graba o sube"
+            desc="Graba hasta 15s o sube un audio corto desde tu dispositivo."
+          />
+          <Card
+            title="✍️ Transcribe (EN/ES)"
+            desc="Reconocimiento de voz (Whisper) + traducción automática."
+          />
+          <Card
+            title="✅ Feedback claro"
+            desc="Nivel estimado, correcciones, vocabulario y tips de pronunciación."
+          />
+          <Card
+            title="🗂️ Historial"
+            desc="Guarda, revisa y borra prácticas para medir tu progreso."
+          />
+        </div>
 
-        {/* Botón con gradiente y hover (necesita 'use client') */}
-        <div style={{ textAlign: "center", marginTop: 10 }}>
+        <div
+          style={{
+            marginTop: 20,
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
           <a
             href="/practice"
             style={{
-              display: "inline-block",
-              padding: "14px 28px",
-              borderRadius: 12,
-              background: "linear-gradient(90deg, #2563eb, #7c3aed)", // Azul → Violeta
-              color: "white",
-              fontWeight: 700,
-              fontSize: 18,
               textDecoration: "none",
-              boxShadow: "0 6px 16px rgba(124, 58, 237, 0.4)",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-            }}
-            onMouseOver={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "scale(1.05)";
-              (e.currentTarget as HTMLElement).style.boxShadow =
-                "0 8px 20px rgba(124, 58, 237, 0.6)";
-            }}
-            onMouseOut={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "scale(1)";
-              (e.currentTarget as HTMLElement).style.boxShadow =
-                "0 6px 16px rgba(124, 58, 237, 0.4)";
+              padding: "12px 18px",
+              borderRadius: 12,
+              background: "linear-gradient(90deg, #2563eb, #7c3aed)",
+              color: "white",
+              fontWeight: 800,
+              boxShadow: "0 10px 24px rgba(124,58,237,0.35)",
             }}
           >
             🚀 ¡Comienza a practicar ahora!
           </a>
         </div>
-      </div>
 
-      {/* Footer con créditos */}
-      <footer style={{ marginTop: 40, fontSize: "0.9rem", color: "#555" }}>
-        Diseñado por <strong>Jairol CAN HELP YOU</strong> ✨ con la asistencia de IA
-      </footer>
+        <footer
+          style={{
+            marginTop: 24,
+            textAlign: "center",
+            color: "#6b7280",
+            fontSize: 14,
+          }}
+        >
+          Diseñado por <b>Jairol CAN HELP YOU</b> — con la asistencia de IA
+        </footer>
+      </section>
+
+      {/* Responsivo móvil */}
+      <style>{`
+        @media (max-width: 640px) {
+          h1 { font-size: 1.5rem !important; }
+          p { font-size: 1rem !important; }
+          section { padding: 22px !important; }
+        }
+      `}</style>
+    </main>
+  );
+}
+
+function Card({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div
+      style={{
+        background: "#fafafa",
+        border: "1px solid #e5e7eb",
+        borderRadius: 14,
+        padding: 16,
+        minHeight: 110,
+      }}
+    >
+      <div style={{ fontWeight: 800, marginBottom: 6 }}>{title}</div>
+      <div style={{ color: "#4b5563" }}>{desc}</div>
     </div>
   );
 }
