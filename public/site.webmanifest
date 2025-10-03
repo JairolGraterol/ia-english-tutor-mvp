@@ -1,0 +1,13 @@
+{
+  "name": "IA English Tutor — Jairol CAN HELP YOU",
+  "short_name": "IA English Tutor",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#2563eb",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
