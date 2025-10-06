@@ -64,7 +64,7 @@ export default function Home() {
         >
           <Card
             title="🎤 Graba o sube"
-            desc="Graba hasta 15s o sube un audio corto desde tu dispositivo."
+            desc="Graba hasta 2 minutos o sube un audio corto desde tu dispositivo."
           />
           <Card
             title="✍️ Transcribe (EN/ES)"
