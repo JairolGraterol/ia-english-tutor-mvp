@@ -72,6 +72,16 @@ function ScoreCircle({
   );
 }
 
+/** Mapeo de niveles CEFR a etiqueta */
+const levelMap: Record<string, { label: string; note: string }> = {
+  A1: { label: "A1 (Principiante)", note: "Frases básicas, vocabulario muy limitado." },
+  A2: { label: "A2 (Básico)", note: "Frases simples de uso cotidiano." },
+  B1: { label: "B1 (Intermedio)", note: "Se desenvuelve en situaciones comunes y describe experiencias." },
+  B2: { label: "B2 (Intermedio alto)", note: "Entiende ideas principales de textos complejos y conversa con fluidez razonable." },
+  C1: { label: "C1 (Avanzado)", note: "Uso flexible y efectivo del idioma en contextos sociales y profesionales." },
+  C2: { label: "C2 (Maestría)", note: "Comprensión total y expresión precisa casi nativa." },
+};
+
 export default function PracticePage() {
   // --- Paso progresivo: 0 nada, 1 rol, 2 enfoque, 3 audio listo, 4 transcrito, 5 feedback ---
   const [step, setStep] = useState<number>(0);
@@ -255,7 +265,8 @@ export default function PracticePage() {
 
       const grammarHits =
         countMatch(issues, "gramm") + countMatch(issues, "tense") + countMatch(issues, "article") + corrections.length;
-      const vocabHits = countMatch(issues, "vocab") + countMatch(issues, "word choice") + (practiceWords?.length ? 1 : 0);
+      const vocabHits =
+        countMatch(issues, "vocab") + countMatch(issues, "word choice") + (practiceWords?.length ? 1 : 0);
       const pronHits = countMatch(issues, "pronun") + pronTips.length;
 
       const clamp = (n: number) => Math.max(0, Math.min(100, n));
@@ -399,6 +410,17 @@ export default function PracticePage() {
   // Titileo (transcribir y feedback)
   const shouldBlinkTranscribe = step >= 3 && step < 4 && !loadingSTT && !!file;
   const shouldBlinkFeedback = step >= 4 && step < 5 && !loadingFB && !!transcript && !!role && !!focus;
+
+  // Pronunciar palabras (Web Speech API)
+  const speakWord = (w: string) => {
+    try {
+      const utter = new SpeechSynthesisUtterance(w);
+      utter.lang = "en-US";
+      utter.rate = 0.95;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    } catch {}
+  };
 
   return (
     <main
@@ -594,8 +616,6 @@ export default function PracticePage() {
                 >
                   {loadingSTT ? (
                     "⌛ Transcribiendo..."
-                  ) : shouldBlinkTranscribe ? (
-                    <span style={{ animation: "blink 1.1s infinite" }}>✍️ ② Transcribir</span>
                   ) : (
                     "✍️ ② Transcribir"
                   )}
@@ -605,11 +625,8 @@ export default function PracticePage() {
                       70% { box-shadow: 0 0 0 12px rgba(37,99,235,0); }
                       100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
                     }
-                    @keyframes blink { 0% {opacity:1} 50% {opacity:.45} 100% {opacity:1} }
                   `}</style>
                 </a>
-                {/* Etiqueta visible para el botón, si hiciera falta refuerzo visual */}
-                <span style={{ color: "#111827", fontWeight: 700 }}>✍️ ② Transcribir</span>
               </div>
 
               {/* Audio grabado */}
@@ -621,17 +638,20 @@ export default function PracticePage() {
           {step >= 4 && (
             <div style={{ marginTop: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <b>4) Transcripción (EN)</b>
+                <span style={{ fontSize: 18, fontWeight: 900, color: "#111827" }}>
+                  4) Transcripción (EN)
+                </span>
                 {!loadingSTT && <BlinkBadge color="#0ea5e9">Revisa tu texto</BlinkBadge>}
               </div>
               <pre
                 style={{
                   whiteSpace: "pre-wrap",
-                  background: "#f9fafb",
-                  border: "1px solid #e5e7eb",
-                  padding: 12,
-                  borderRadius: 10,
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  padding: 14,
+                  borderRadius: 12,
                   minHeight: 120,
+                  color: "#0f172a",
                 }}
               >
                 {transcript || "—"}
@@ -772,7 +792,18 @@ export default function PracticePage() {
                 <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
                   A) Nivel estimado
                 </div>
-                <div>{feedback.level_estimate || "—"}</div>
+                <div>
+                  {(() => {
+                    const lvl = String(feedback.level_estimate || "").toUpperCase();
+                    const info = levelMap[lvl] || null;
+                    return (
+                      <div>
+                        <b>{info ? info.label : lvl || "—"}</b>
+                        {info && <div style={{ color: "#4b5563" }}>{info.note}</div>}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
 
               <div>
@@ -813,7 +844,30 @@ export default function PracticePage() {
                 <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
                   D) Palabras a mejorar
                 </div>
-                <div>{Array.isArray(feedback.practice_words) && feedback.practice_words.length > 0 ? feedback.practice_words.join(", ") : "—"}</div>
+                {Array.isArray(feedback.practice_words) && feedback.practice_words.length > 0 ? (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {feedback.practice_words.map((w: string, i: number) => (
+                      <button
+                        key={i}
+                        onClick={() => speakWord(w)}
+                        title={`Escuchar: ${w}`}
+                        style={{
+                          border: "1px solid #e5e7eb",
+                          background: "#f8fafc",
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          cursor: "pointer",
+                          fontWeight: 700,
+                          color: "#111827",
+                        }}
+                      >
+                        🔊 {w}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div>—</div>
+                )}
               </div>
 
               <div>
