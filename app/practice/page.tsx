@@ -82,6 +82,38 @@ const levelMap: Record<string, { label: string; note: string }> = {
   C2: { label: "C2 (Maestría)", note: "Comprensión total y expresión precisa casi nativa." },
 };
 
+/** Etiqueta grande para nivel */
+function LevelBadge({ level }: { level: string }) {
+  const lvl = String(level || "").toUpperCase();
+  const info = levelMap[lvl];
+  return (
+    <div>
+      <span
+        style={{
+          display: "inline-block",
+          padding: "8px 14px",
+          borderRadius: 999,
+          fontWeight: 900,
+          color: "white",
+          background:
+            lvl.startsWith("A") ? "#6b7280" :
+            lvl.startsWith("B") ? "#2563eb" :
+            lvl.startsWith("C") ? "#16a34a" : "#6b7280",
+          boxShadow: "0 6px 16px rgba(37,99,235,.25)",
+          letterSpacing: 0.3,
+        }}
+      >
+        {info ? info.label : lvl || "—"}
+      </span>
+      {info && (
+        <div style={{ marginTop: 6, color: "#4b5563" }}>
+          {info.note}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PracticePage() {
   // --- Paso progresivo: 0 nada, 1 rol, 2 enfoque, 3 audio listo, 4 transcrito, 5 feedback ---
   const [step, setStep] = useState<number>(0);
@@ -596,29 +628,26 @@ export default function PracticePage() {
                   {file ? file.name : "No file chosen"}
                 </span>
 
-                {/* Transcribir */}
+                {/* Transcribir — siempre con texto y gradiente cuando está habilitado */}
                 <a
                   onClick={runSTT}
                   style={{
                     cursor: file ? "pointer" : "not-allowed",
                     padding: "10px 16px",
                     borderRadius: 10,
-                    background: file ? "#111827" : "#cbd5e1",
+                    background: file ? "linear-gradient(90deg, #2563eb, #7c3aed)" : "#cbd5e1",
                     color: "white",
-                    fontWeight: 700,
+                    fontWeight: 800,
                     textDecoration: "none",
-                    opacity: loadingSTT ? 0.7 : 1,
+                    opacity: loadingSTT ? 0.8 : 1,
                     position: "relative",
-                    boxShadow: shouldBlinkTranscribe ? "0 0 0 0 rgba(37, 99, 235, .7)" : "none",
+                    boxShadow: file ? "0 6px 16px rgba(124, 58, 237, 0.4)" : "none",
                     animation: shouldBlinkTranscribe ? "pulseRing 1.2s infinite" : "none",
+                    letterSpacing: 0.2,
                   }}
                   title="Transcribir audio (STT)"
                 >
-                  {loadingSTT ? (
-                    "⌛ Transcribiendo..."
-                  ) : (
-                    "✍️ ② Transcribir"
-                  )}
+                  {loadingSTT ? "⌛ Transcribiendo..." : "✍️ ② Transcribir"}
                   <style>{`
                     @keyframes pulseRing {
                       0% { box-shadow: 0 0 0 0 rgba(37,99,235,.6); }
@@ -673,13 +702,14 @@ export default function PracticePage() {
                   background:
                     transcript && role && focus ? "linear-gradient(90deg, #2563eb, #7c3aed)" : "#cbd5e1",
                   color: "white",
-                  fontWeight: 700,
+                  fontWeight: 800,
                   textDecoration: "none",
                   boxShadow:
                     transcript && role && focus ? "0 6px 16px rgba(124, 58, 237, 0.4)" : "none",
-                  opacity: loadingFB ? 0.7 : 1,
+                  opacity: loadingFB ? 0.8 : 1,
                   position: "relative",
                   animation: shouldBlinkFeedback ? "pulseRingFB 1.2s infinite" : "none",
+                  letterSpacing: 0.2,
                 }}
                 title="Obtener feedback"
               >
@@ -701,9 +731,10 @@ export default function PracticePage() {
                   borderRadius: 10,
                   background: "linear-gradient(90deg, #2563eb, #7c3aed)",
                   color: "white",
-                  fontWeight: 700,
+                  fontWeight: 800,
                   textDecoration: "none",
                   boxShadow: "0 6px 16px rgba(124, 58, 237, 0.4)",
+                  letterSpacing: 0.2,
                 }}
                 title="Guardar práctica actual"
               >
@@ -718,9 +749,10 @@ export default function PracticePage() {
                   borderRadius: 10,
                   background: "#fee2e2",
                   color: "#991b1b",
-                  fontWeight: 700,
+                  fontWeight: 800,
                   textDecoration: "none",
                   border: "1px solid #fecaca",
+                  letterSpacing: 0.2,
                 }}
                 title="Borrar práctica (pantalla)"
               >
@@ -792,18 +824,7 @@ export default function PracticePage() {
                 <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
                   A) Nivel estimado
                 </div>
-                <div>
-                  {(() => {
-                    const lvl = String(feedback.level_estimate || "").toUpperCase();
-                    const info = levelMap[lvl] || null;
-                    return (
-                      <div>
-                        <b>{info ? info.label : lvl || "—"}</b>
-                        {info && <div style={{ color: "#4b5563" }}>{info.note}</div>}
-                      </div>
-                    );
-                  })()}
-                </div>
+                <LevelBadge level={String(feedback.level_estimate || "")} />
               </div>
 
               <div>
@@ -857,7 +878,7 @@ export default function PracticePage() {
                           padding: "6px 10px",
                           borderRadius: 999,
                           cursor: "pointer",
-                          fontWeight: 700,
+                          fontWeight: 800,
                           color: "#111827",
                         }}
                       >
@@ -919,7 +940,7 @@ export default function PracticePage() {
                     borderRadius: 10,
                     background: "#f3f4f6",
                     color: "#111827",
-                    fontWeight: 700,
+                    fontWeight: 800,
                     textDecoration: "none",
                     border: "1px solid #e5e7eb",
                   }}
@@ -935,7 +956,7 @@ export default function PracticePage() {
                     borderRadius: 10,
                     background: "#f3f4f6",
                     color: "#111827",
-                    fontWeight: 700,
+                    fontWeight: 800,
                     textDecoration: "none",
                     border: "1px solid #e5e7eb",
                   }}
@@ -951,7 +972,7 @@ export default function PracticePage() {
                     borderRadius: 10,
                     background: selectedIds.size ? "#fee2e2" : "#f3f4f6",
                     color: selectedIds.size ? "#991b1b" : "#6b7280",
-                    fontWeight: 700,
+                    fontWeight: 800,
                     textDecoration: "none",
                     border: "1px solid #fecaca",
                     opacity: selectedIds.size ? 1 : 0.7,
@@ -968,7 +989,7 @@ export default function PracticePage() {
                     borderRadius: 10,
                     background: "#fee2e2",
                     color: "#991b1b",
-                    fontWeight: 700,
+                    fontWeight: 800,
                     textDecoration: "none",
                     border: "1px solid #fecaca",
                   }}
@@ -1012,7 +1033,7 @@ export default function PracticePage() {
                         onChange={() => toggleSelect(item.id)}
                         title="Seleccionar esta práctica"
                       />
-                      <div style={{ fontWeight: 700 }}>
+                      <div style={{ fontWeight: 800 }}>
                         {fmtDate(item.createdAt)}
                       </div>
                     </div>
@@ -1043,7 +1064,7 @@ export default function PracticePage() {
                           borderRadius: 10,
                           background: "linear-gradient(90deg, #2563eb, #7c3aed)",
                           color: "white",
-                          fontWeight: 700,
+                          fontWeight: 800,
                           textDecoration: "none",
                         }}
                         title="Cargar esta práctica"
@@ -1058,7 +1079,7 @@ export default function PracticePage() {
                           borderRadius: 10,
                           background: "#fee2e2",
                           color: "#991b1b",
-                          fontWeight: 700,
+                          fontWeight: 800,
                           textDecoration: "none",
                           border: "1px solid #fecaca",
                         }}
