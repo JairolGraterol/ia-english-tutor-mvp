@@ -12,7 +12,7 @@ type PracticeItem = {
 };
 
 const LS_KEY = "practice_history_v1";
-const MAX_SECONDS = 15; // límite de grabación
+const MAX_SECONDS = 120; // ⏱️ límite de grabación: 2:00
 
 /** Indicador intermitente */
 function BlinkBadge({ children, color = "#2563eb" }: { children: any; color?: string }) {
@@ -88,11 +88,8 @@ export default function PracticePage() {
 
   const [loadingSTT, setLoadingSTT] = useState(false);
   const [loadingFB, setLoadingFB] = useState(false);
-  const [loadingTR, setLoadingTR] = useState(false);
 
   const [transcript, setTranscript] = useState("");
-  const [transEN, setTransEN] = useState("");
-  const [transES, setTransES] = useState("");
 
   const [role, setRole] = useState("");
   const [focus, setFocus] = useState("");
@@ -126,7 +123,7 @@ export default function PracticePage() {
     } catch {}
   };
 
-  // Timer grabación (auto-stop a 15s)
+  // Timer grabación (auto-stop a 2:00)
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setSeconds(0);
@@ -149,8 +146,6 @@ export default function PracticePage() {
       setError("");
       setFeedback(null);
       setTranscript("");
-      setTransEN("");
-      setTransES("");
       setRecordUrl("");
       chunksRef.current = [];
 
@@ -192,7 +187,7 @@ export default function PracticePage() {
     setRecording(false);
   };
 
-  // STT + Traducción
+  // STT (solo transcripción EN)
   const runSTT = async () => {
     if (!file) {
       alert("Graba o selecciona un audio (.m4a/.mp3/.webm)");
@@ -201,8 +196,6 @@ export default function PracticePage() {
     setError("");
     setFeedback(null);
     setTranscript("");
-    setTransEN("");
-    setTransES("");
     setLoadingSTT(true);
 
     try {
@@ -215,23 +208,10 @@ export default function PracticePage() {
       const raw = (json.transcript || "").trim();
       setTranscript(raw);
 
-      setLoadingTR(true);
-      const tr = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: raw }),
-      });
-      const trJson = await tr.json();
-      if (!tr.ok) throw new Error(trJson?.error || "Translate error");
-
-      setTransEN(trJson.en || raw);
-      setTransES(trJson.es || "");
-
-      setStep((s) => Math.max(s, 4)); // transcripción + traducción listas
+      setStep((s) => Math.max(s, 4)); // transcripción lista
     } catch (e: any) {
-      setError("STT/Translate: " + (e?.message || "failed"));
+      setError("STT: " + (e?.message || "failed"));
     } finally {
-      setLoadingTR(false);
       setLoadingSTT(false);
     }
   };
@@ -323,8 +303,6 @@ export default function PracticePage() {
 
   const clearCurrent = () => {
     setTranscript("");
-    setTransEN("");
-    setTransES("");
     setFeedback(null);
     setError("");
     setRecordUrl("");
@@ -348,8 +326,6 @@ export default function PracticePage() {
     setRole(item.role);
     setFocus(item.focus);
     setTranscript(item.transcript);
-    setTransEN(item.transcript);
-    setTransES("");
     setFeedback(item.feedback);
     setStep(5);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -421,7 +397,7 @@ export default function PracticePage() {
   const isRed = hasScore && overallScore < 50;
 
   // Titileo (transcribir y feedback)
-  const shouldBlinkTranscribe = step >= 3 && step < 4 && !loadingSTT && !loadingTR && !!file;
+  const shouldBlinkTranscribe = step >= 3 && step < 4 && !loadingSTT && !!file;
   const shouldBlinkFeedback = step >= 4 && step < 5 && !loadingFB && !!transcript && !!role && !!focus;
 
   return (
@@ -560,7 +536,7 @@ export default function PracticePage() {
                 )}
 
                 <span>
-                  Tiempo: <b>{humanTime(seconds)}</b> (máx {humanTime(MAX_SECONDS)})
+                  Tiempo: <b>{humanTime(seconds)}</b> (máx 02:00)
                 </span>
 
                 {/* Input de archivo estilizado gris claro */}
@@ -583,8 +559,8 @@ export default function PracticePage() {
                     accept="audio/*"
                     onChange={(e) => {
                       const f = e.target.files?.[0] ?? null;
-                      if (f && f.size > 5 * 1024 * 1024) {
-                        alert("Archivo muy grande (máx 5MB).");
+                      if (f && f.size > 10 * 1024 * 1024) {
+                        alert("Archivo muy grande (máx 10MB).");
                         e.currentTarget.value = "";
                         return;
                       }
@@ -609,14 +585,14 @@ export default function PracticePage() {
                     color: "white",
                     fontWeight: 700,
                     textDecoration: "none",
-                    opacity: loadingSTT || loadingTR ? 0.7 : 1,
+                    opacity: loadingSTT ? 0.7 : 1,
                     position: "relative",
                     boxShadow: shouldBlinkTranscribe ? "0 0 0 0 rgba(37, 99, 235, .7)" : "none",
                     animation: shouldBlinkTranscribe ? "pulseRing 1.2s infinite" : "none",
                   }}
                   title="Transcribir audio (STT)"
                 >
-                  {loadingSTT || loadingTR ? (
+                  {loadingSTT ? (
                     "⌛ Transcribiendo..."
                   ) : shouldBlinkTranscribe ? (
                     <span style={{ animation: "blink 1.1s infinite" }}>✍️ ② Transcribir</span>
@@ -632,6 +608,8 @@ export default function PracticePage() {
                     @keyframes blink { 0% {opacity:1} 50% {opacity:.45} 100% {opacity:1} }
                   `}</style>
                 </a>
+                {/* Etiqueta visible para el botón, si hiciera falta refuerzo visual */}
+                <span style={{ color: "#111827", fontWeight: 700 }}>✍️ ② Transcribir</span>
               </div>
 
               {/* Audio grabado */}
@@ -639,54 +617,25 @@ export default function PracticePage() {
             </div>
           )}
 
-          {/* Paso 4: Transcripciones */}
+          {/* Paso 4: Transcripción EN */}
           {step >= 4 && (
             <div style={{ marginTop: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <b>4) Transcripción</b>
-                {!loadingTR && <BlinkBadge color="#0ea5e9">Revisa EN / ES</BlinkBadge>}
+                <b>4) Transcripción (EN)</b>
+                {!loadingSTT && <BlinkBadge color="#0ea5e9">Revisa tu texto</BlinkBadge>}
               </div>
-
-              <div
-                className="two-col"
+              <pre
                 style={{
-                  display: "grid",
-                  gap: 10,
-                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  whiteSpace: "pre-wrap",
+                  background: "#f9fafb",
+                  border: "1px solid #e5e7eb",
+                  padding: 12,
+                  borderRadius: 10,
+                  minHeight: 120,
                 }}
               >
-                <div>
-                  <div style={{ fontWeight: 900, marginBottom: 6, color: "#0f172a" }}>English</div>
-                  <pre
-                    style={{
-                      whiteSpace: "pre-wrap",
-                      background: "#f9fafb",
-                      border: "1px solid #e5e7eb",
-                      padding: 12,
-                      borderRadius: 10,
-                      minHeight: 80,
-                    }}
-                  >
-                    {transEN || transcript || "—"}
-                  </pre>
-                </div>
-
-                <div>
-                  <div style={{ fontWeight: 900, marginBottom: 6, color: "#0f172a" }}>Español</div>
-                  <pre
-                    style={{
-                      whiteSpace: "pre-wrap",
-                      background: "#f9fafb",
-                      border: "1px solid #e5e7eb",
-                      padding: 12,
-                      borderRadius: 10,
-                      minHeight: 80,
-                    }}
-                  >
-                    {transES || "—"}
-                  </pre>
-                </div>
-              </div>
+                {transcript || "—"}
+              </pre>
             </div>
           )}
 
@@ -818,53 +767,75 @@ export default function PracticePage() {
           ) : !feedback ? (
             <div style={{ color: "#6b7280" }}>Sin contenido.</div>
           ) : (
-            <div style={{ display: "grid", gap: 12 }}>
+            <div style={{ display: "grid", gap: 14 }}>
               <div>
-                <b>Nivel estimado:</b> {feedback.level_estimate || "—"}
+                <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
+                  A) Nivel estimado
+                </div>
+                <div>{feedback.level_estimate || "—"}</div>
               </div>
+
               <div>
-                <b>Fortalezas</b>
-                <ul>
-                  {(feedback.strengths || []).map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
-                  ))}
-                </ul>
+                <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
+                  B) Áreas a mejorar
+                </div>
+                {Array.isArray(feedback.issues) && feedback.issues.length > 0 ? (
+                  <ul style={{ margin: 0, paddingLeft: 18 }}>
+                    {feedback.issues.map((s: string, i: number) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div>—</div>
+                )}
               </div>
+
               <div>
-                <b>Áreas de mejora</b>
-                <ul>
-                  {(feedback.issues || []).map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
-                  ))}
-                </ul>
+                <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
+                  C) Correcciones
+                </div>
+                {Array.isArray(feedback.corrections) && feedback.corrections.length > 0 ? (
+                  <ul style={{ margin: 0, paddingLeft: 18 }}>
+                    {feedback.corrections.map((c: any, i: number) => (
+                      <li key={i}>
+                        <div><b>Original:</b> {c.original}</div>
+                        <div><b>Correcto:</b> {c.corrected}</div>
+                        <div style={{ color: "#555" }}>{c.explanation}</div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div>—</div>
+                )}
               </div>
+
               <div>
-                <b>Correcciones</b>
-                <ul>
-                  {(feedback.corrections || []).map((c: any, i: number) => (
-                    <li key={i}>
-                      <div><b>Original:</b> {c.original}</div>
-                      <div><b>Correcto:</b> {c.corrected}</div>
-                      <div style={{ color: "#555" }}>{c.explanation}</div>
-                    </li>
-                  ))}
-                </ul>
+                <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
+                  D) Palabras a mejorar
+                </div>
+                <div>{Array.isArray(feedback.practice_words) && feedback.practice_words.length > 0 ? feedback.practice_words.join(", ") : "—"}</div>
               </div>
+
               <div>
-                <b>Palabras para practicar</b>
-                <div>{(feedback.practice_words || []).join(", ") || "—"}</div>
+                <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
+                  E) Consejos de pronunciación
+                </div>
+                {Array.isArray(feedback.pronunciation_tips) && feedback.pronunciation_tips.length > 0 ? (
+                  <ul style={{ margin: 0, paddingLeft: 18 }}>
+                    {feedback.pronunciation_tips.map((s: string, i: number) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div>—</div>
+                )}
               </div>
+
               <div>
-                <b>Consejos de pronunciación</b>
-                <ul>
-                  {(feedback.pronunciation_tips || []).map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <b>Respuesta sugerida</b>
-                <pre style={{ whiteSpace: "pre-wrap" }}>
+                <div style={{ fontWeight: 900, color: "#111827", marginBottom: 4 }}>
+                  F) Discurso sugerido
+                </div>
+                <pre style={{ whiteSpace: "pre-wrap", margin: 0 }}>
                   {feedback.suggested_answer || "—"}
                 </pre>
               </div>
@@ -1073,10 +1044,7 @@ export default function PracticePage() {
             color: #111827 !important;
           }
           pre { padding: 14px !important; }
-          /* selects y botones a ancho completo en móvil */
           select, button, a[title], a[onclick] { width: 100% !important; }
-          /* EN/ES en una sola columna en móvil */
-          .two-col { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </main>
