@@ -165,6 +165,7 @@ export default function PracticePage() {
   const [loadingFB, setLoadingFB] = useState(false);
 
   const [transcript, setTranscript] = useState("");
+  const [detectedLanguage, setDetectedLanguage] = useState<string>(""); // 👈 idioma detectado
 
   const [role, setRole] = useState("");
   const [focus, setFocus] = useState("");
@@ -221,6 +222,7 @@ export default function PracticePage() {
       setError("");
       setFeedback(null);
       setTranscript("");
+      setDetectedLanguage(""); // reset idioma detectado
       setRecordUrl("");
       chunksRef.current = [];
 
@@ -262,7 +264,7 @@ export default function PracticePage() {
     setRecording(false);
   };
 
-  // STT (solo transcripción EN)
+  // STT (siempre devuelve EN; si no es en, traduce en backend)
   const runSTT = async () => {
     if (!file) {
       alert("Graba o selecciona un audio (.m4a/.mp3/.webm)");
@@ -271,6 +273,7 @@ export default function PracticePage() {
     setError("");
     setFeedback(null);
     setTranscript("");
+    setDetectedLanguage("");
     setLoadingSTT(true);
 
     try {
@@ -282,6 +285,7 @@ export default function PracticePage() {
 
       const raw = (json.transcript || "").trim();
       setTranscript(raw);
+      setDetectedLanguage(json.detected_language || ""); // 👈 guardar idioma detectado
 
       setStep((s) => Math.max(s, 4)); // transcripción lista
     } catch (e: any) {
@@ -385,6 +389,7 @@ export default function PracticePage() {
     setFile(null);
     setOverallScore(0);
     setSeconds(0);
+    setDetectedLanguage("");
     setStep(role ? (focus ? 2 : 1) : 0);
     if (mediaStream) {
       mediaStream.getTracks().forEach((t) => t.stop());
@@ -486,6 +491,20 @@ export default function PracticePage() {
       speechSynthesis.speak(utter);
     } catch {}
   };
+
+  // Mapeo banderitas simples
+  const langFlag = (code: string) => {
+    const c = (code || "").toLowerCase();
+    if (c === "en") return "🇺🇸 English";
+    if (c === "es") return "🇪🇸 Spanish";
+    if (c === "pt") return "🇵🇹 Portuguese";
+    if (c === "fr") return "🇫🇷 French";
+    if (c === "it") return "🇮🇹 Italian";
+    if (c === "de") return "🇩🇪 German";
+    return c ? c.toUpperCase() : "unknown";
+  };
+
+  const isTranslated = detectedLanguage && detectedLanguage !== "en";
 
   return (
     <main
@@ -701,10 +720,35 @@ export default function PracticePage() {
             <div style={{ marginTop: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <span style={{ fontSize: 18, fontWeight: 900, color: "#111827" }}>
-                  4) Transcripción (EN)
+                  4) Transcripción {isTranslated ? "(EN — traducida)" : "(EN)"}
                 </span>
                 {!loadingSTT && <BlinkBadge color="#0ea5e9">Revisa tu texto</BlinkBadge>}
               </div>
+
+              {/* Etiqueta de idioma detectado */}
+              {detectedLanguage && (
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    background: "#eef2ff",
+                    color: "#1e3a8a",
+                    border: "1px solid #c7d2fe",
+                    fontWeight: 700,
+                    marginBottom: 8,
+                  }}
+                  title="Idioma detectado por el sistema"
+                >
+                  🌐 Idioma detectado:{" "}
+                  {detectedLanguage === "en"
+                    ? "🇺🇸 English"
+                    : `${langFlag(detectedLanguage)} → 🇺🇸 English (traducido)`}
+                </div>
+              )}
+
               <pre
                 style={{
                   whiteSpace: "pre-wrap",
