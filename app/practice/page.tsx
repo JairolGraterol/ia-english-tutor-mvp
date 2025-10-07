@@ -114,6 +114,39 @@ function LevelBadge({ level }: { level: string }) {
   );
 }
 
+/** Compartir snapshot de práctica */
+function sharePracticeSnapshot({
+  role,
+  focus,
+  score,
+  transcript,
+}: { role: string; focus: string; score: number; transcript: string }) {
+  const url =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : "https://ia-english-tutor-mvp.vercel.app";
+  const short = transcript?.slice(0, 180) || "";
+  const title = "IA English Tutor — Práctica";
+  const text = `Mi práctica de inglés:
+• Rol: ${role || "—"}
+• Enfoque: ${focus || "—"}
+• Puntuación: ${score || 0}/100
+
+"${short}${short.length >= 180 ? "...": ""}"
+
+Pruébalo aquí: ${url}`;
+
+  if (navigator.share) {
+    navigator.share({ title, text, url }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert("¡Resumen copiado! Pégalo en WhatsApp, correo o notas.");
+    });
+  } else {
+    alert(text);
+  }
+}
+
 export default function PracticePage() {
   // --- Paso progresivo: 0 nada, 1 rol, 2 enfoque, 3 audio listo, 4 transcrito, 5 feedback ---
   const [step, setStep] = useState<number>(0);
@@ -688,7 +721,7 @@ export default function PracticePage() {
             </div>
           )}
 
-          {/* Paso 5: Feedback */}
+          {/* Paso 5: Feedback + acciones */}
           {step >= 4 && (
             <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
               <BlinkBadge color="#16a34a">③ Obtén tu feedback</BlinkBadge>
@@ -739,6 +772,31 @@ export default function PracticePage() {
                 title="Guardar práctica actual"
               >
                 💾 Guardar práctica
+              </a>
+
+              <a
+                onClick={() =>
+                  sharePracticeSnapshot({
+                    role,
+                    focus,
+                    score: overallScore,
+                    transcript,
+                  })
+                }
+                style={{
+                  cursor: "pointer",
+                  padding: "10px 16px",
+                  borderRadius: 10,
+                  background: "linear-gradient(90deg, #0ea5e9, #2563eb)",
+                  color: "white",
+                  fontWeight: 800,
+                  textDecoration: "none",
+                  boxShadow: "0 6px 16px rgba(37,99,235,.35)",
+                  letterSpacing: 0.2,
+                }}
+                title="Compartir práctica"
+              >
+                📤 Compartir práctica
               </a>
 
               <a
